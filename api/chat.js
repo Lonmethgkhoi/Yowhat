@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 export default async function handler(req, res) {
@@ -10,21 +10,37 @@ export default async function handler(req, res) {
   }
 
   const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
-  }
+  if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
   try {
+    
+    const model = "gpt-5-nano"; 
+
     const response = await openai.responses.create({
-      model: "gpt-5-nano",  
-      input: prompt,
-      store: true,
+      model: model,
+      input: prompt
     });
 
-    res.status(200).json({ reply: response.output_text });
+    if (!response.output_text) {
+      console.warn("Warning: Response không có output_text!", response);
+      return res.status(500).json({ 
+        error: "AI không trả dữ liệu", 
+        modelUsed: model 
+      });
+    }
+
+    
+    res.status(200).json({ 
+      reply: response.output_text, 
+      modelUsed: model 
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Lỗi gọi OpenAI:", err);
+
+    
+    res.status(500).json({ 
+      error: err.message || "Internal server error", 
+      modelUsed: "gpt-5-nano" 
+    });
   }
 }

@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addChatMessage('đang gõ...', 'ai-thinking');
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/chat.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: userMessage })

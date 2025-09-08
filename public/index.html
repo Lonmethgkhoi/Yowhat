@@ -422,6 +422,14 @@
             color: var(--text-color);
             border-bottom-left-radius: 2px;
         }
+        .ai-thinking {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
         #chat-input-form {
             display: flex;
             gap: 10px;
@@ -493,7 +501,6 @@
     </div>
 </div>
 
-<!-- Home Page -->
 <div id="home-page" class="content-container active">
     <div class="main-content">
         <h1>Poison</h1>
@@ -502,7 +509,6 @@
     </div>
 </div>
 
-<!-- Games Page -->
 <div id="games-page" class="content-container">
     <h2>Games</h2>
     <div class="games-list">
@@ -524,7 +530,6 @@
     </div>
 </div>
 
-<!-- Resources Page -->
 <div id="resources-page" class="content-container">
     <h2>Resources</h2>
 
@@ -563,12 +568,10 @@
     </div>
 </div>
 
-<!-- Chat Icon -->
 <div class="chat-icon" id="chat-icon">
     <svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.58 2 11c0 2.21.89 4.21 2.34 5.73L2 21l4.42-2.34C8.23 19.11 10.09 19.5 12 19.5c5.52 0 10-3.58 10-8.5S17.52 3 12 3z"></path></svg>
 </div>
 
-<!-- Chat Modal -->
 <div id="chat-modal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -637,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addChatMessage('đang gõ...', 'ai-thinking');
 
         try {
-            const response = await fetch('/api/chat.js', {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: userMessage })
@@ -656,6 +659,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function addChatMessage(message, type) {
         const bubble = document.createElement('div');
         bubble.classList.add('chat-bubble', type);
+        if (type === 'ai-thinking') {
+            bubble.classList.add('ai'); 
+        }
         bubble.textContent = message;
         chatMessages.appendChild(bubble);
         chatMessages.scrollTop = chatMessages.scrollHeight;

@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"}); // Sửa tên model tại đây
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"}); // Dòng này đã được sửa
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -23,13 +23,13 @@ export default async function handler(req, res) {
       console.warn("Warning: Gemini response did not contain text!", response);
       return res.status(500).json({ 
         error: "AI did not return any data", 
-        modelUsed: "gemini-1.5-pro" 
+        modelUsed: "gemini-1.5-flash" 
       });
     }
 
     res.status(200).json({ 
       reply: text, 
-      modelUsed: "gemini-1.5-pro" 
+      modelUsed: "gemini-1.5-flash" 
     });
 
   } catch (err) {
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     res.status(500).json({ 
       error: err.message || "Internal server error", 
-      modelUsed: "gemini-1.5-pro" 
+      modelUsed: "gemini-1.5-flash" 
     });
   }
 }

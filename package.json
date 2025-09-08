@@ -1,15 +1,19 @@
 {
-  "name": "Yowhat",
+  "name": "yowhat",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A simple chat app using Gemini API hosted on Vercel.",
+  "main": "api/chat.js",
   "scripts": {
     "start": "node api/chat.js"
   },
-  "keywords": [],
+  "keywords": [
+    "vercel",
+    "gemini",
+    "chat-api"
+  ],
   "author": "Lonmethgkhoi",
   "license": "MIT",
   "dependencies": {
-    "openai": "^4.0.0"
+    "@google/generative-ai": "^0.11.0"
   }
 }

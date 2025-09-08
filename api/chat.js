@@ -1,8 +1,7 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+// Lấy API key từ biến môi trường
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -15,35 +14,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const model = "gpt-4o";
+    // Chọn model Gemini Pro
+    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
-    const response = await openai.chat.completions.create({
-      model: model,
-      messages: [{ role: "user", content: prompt }],
-      stream: false,
-    });
-    
-    const aiReply = response.choices[0].message.content;
+    // Gọi API của Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    if (!aiReply) {
-      console.warn("Warning: AI response did not contain content!", response);
+    if (!text) {
+      console.warn("Warning: Gemini response did not contain text!", response);
       return res.status(500).json({ 
         error: "AI did not return any data", 
-        modelUsed: model 
+        modelUsed: "gemini-pro" 
       });
     }
 
     res.status(200).json({ 
-      reply: aiReply, 
-      modelUsed: model 
+      reply: text, 
+      modelUsed: "gemini-pro" 
     });
 
   } catch (err) {
-    console.error("Error calling OpenAI:", err);
+    console.error("Error calling Gemini API:", err);
 
     res.status(500).json({ 
       error: err.message || "Internal server error", 
-      modelUsed: "gpt-4o" 
+      modelUsed: "gemini-pro" 
     });
   }
 }

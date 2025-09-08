@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Lấy API key từ biến môi trường
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
@@ -14,10 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Chọn model Gemini Pro
-    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro"}); // Dòng này đã được sửa
 
-    // Gọi API của Gemini
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
@@ -26,13 +23,13 @@ export default async function handler(req, res) {
       console.warn("Warning: Gemini response did not contain text!", response);
       return res.status(500).json({ 
         error: "AI did not return any data", 
-        modelUsed: "gemini-pro" 
+        modelUsed: "gemini-1.0-pro" 
       });
     }
 
     res.status(200).json({ 
       reply: text, 
-      modelUsed: "gemini-pro" 
+      modelUsed: "gemini-1.0-pro" 
     });
 
   } catch (err) {
@@ -40,7 +37,7 @@ export default async function handler(req, res) {
 
     res.status(500).json({ 
       error: err.message || "Internal server error", 
-      modelUsed: "gemini-pro" 
+      modelUsed: "gemini-1.0-pro" 
     });
   }
 }

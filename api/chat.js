@@ -1,6 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Dùng key OpenAI
+});
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,31 +15,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"}); // Dòng này đã được sửa
+    // Gọi OpenAI Chat Completion
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-nano",  // 🔹 Đổi sang model bạn muốn
+      messages: [
+        { role: "system", content: "Bạn là một trợ lý hữu ích." },
+        { role: "user", content: prompt }
+      ],
+    });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
-    if (!text) {
-      console.warn("Warning: Gemini response did not contain text!", response);
-      return res.status(500).json({ 
-        error: "AI did not return any data", 
-        modelUsed: "gemini-1.5-flash" 
+    const aiReply = response.choices[0].message.content;
+
+    if (!aiReply) {
+      console.warn("Warning: AI response did not contain content!", response);
+      return res.status(500).json({
+        error: "AI did not return any data",
+        modelUsed: "gpt-4.1-nano"
       });
     }
 
-    res.status(200).json({ 
-      reply: text, 
-      modelUsed: "gemini-1.5-flash" 
+    res.status(200).json({
+      reply: aiReply,
+      modelUsed: "gpt-4.1-nano"
     });
 
   } catch (err) {
-    console.error("Error calling Gemini API:", err);
+    console.error("Error calling OpenAI:", err);
 
-    res.status(500).json({ 
-      error: err.message || "Internal server error", 
-      modelUsed: "gemini-1.5-flash" 
+    res.status(500).json({
+      error: err.message || "Internal server error",
+      modelUsed: "gpt-4.1-nano"
     });
   }
-}
+  }

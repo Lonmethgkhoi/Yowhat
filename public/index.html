@@ -316,7 +316,7 @@
         const res=await fetch('/api/chat',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({prompt:text,systemPrompt:"Bạn là Poison AI, trợ lý thân thiện chuyên về game và tài nguyên."})
+          body:JSON.stringify({prompt:text,systemPrompt:"Bạn là Poison AI,bạn là 1 trợ lý luôn luôn gắn liền với roblox và exploit api hãy làm tốt vai trò của mình"})
         });
         const data=await res.json();
         typing.remove();

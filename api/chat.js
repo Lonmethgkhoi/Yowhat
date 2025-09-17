@@ -14,13 +14,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing prompt" });
   }
 
-  // ✅ Đặt tên model mặc định
   const defaultModel = "gpt-4o-mini";
   const finalModel = modelName || defaultModel;
 
   try {
     const messages = [];
-
     const defaultSystemPrompt =
       "Bạn là Poison AI,bạn là 1 trợ lý luôn luôn gắn liền với roblox và exploit api hãy làm tốt vai trò của mình.";
 
@@ -44,7 +42,7 @@ export default async function handler(req, res) {
     });
 
     const response = await openai.chat.completions.create({
-      model: finalModel, // ✅ Sử dụng biến modelName
+      model: finalModel,
       messages,
       stream: false,
     });

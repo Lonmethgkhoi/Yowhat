@@ -1,74 +1,70 @@
-import OpenAI from "openai";
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatInputForm = document.getElementById('chat-input-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const systemPromptInput = document.getElementById('system-prompt');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+        let chatHistory = [];
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+        chatInputForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+            
+            // Lấy system prompt từ ô nhập liệu
+            const systemPrompt = systemPromptInput.value.trim();
 
-  const { prompt, history, systemPrompt } = req.body;
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
-  }
+            // Thêm tin nhắn của người dùng vào lịch sử chat và hiển thị
+            addChatMessage(userMessage, 'user');
+            chatInput.value = '';
 
-  try {
-    const messages = [];
+            addChatMessage('đang gõ...', 'ai-thinking');
 
-    // ✅ System prompt mặc định
-    const defaultSystemPrompt =
-      "Bạn là Poison AI,bạn là 1 trợ lý luôn luôn gắn liền với roblox và exploit api hãy làm tốt vai trò của mình.";
+            // Cấu trúc history cho API, tương thích với cả Gemini và OpenAI
+            const formattedHistory = chatHistory.map(item => ({
+                role: item.role,
+                parts: [{ text: item.content }]
+            }));
 
-    messages.push({
-      role: "system",
-      content: systemPrompt || defaultSystemPrompt,
-    });
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: userMessage,
+                        history: formattedHistory, // Gửi toàn bộ lịch sử chat
+                        systemPrompt: systemPrompt || undefined // Gửi system prompt
+                    })
+                });
+                const data = await response.json();
+                const thinkingBubble = chatMessages.querySelector('.ai-thinking');
+                if (thinkingBubble) thinkingBubble.remove();
+                
+                const aiReply = data.reply || 'Không có phản hồi';
+                addChatMessage(aiReply, 'ai');
 
-    // ✅ Lịch sử chat (nếu có)
-    if (history && Array.isArray(history)) {
-      history.forEach(entry => {
-        messages.push({
-          role: entry.role === "user" ? "user" : "assistant",
-          content: entry.parts[0].text,
+                // Thêm tin nhắn của người dùng và AI vào lịch sử chat
+                chatHistory.push({ role: 'user', content: userMessage });
+                chatHistory.push({ role: 'assistant', content: aiReply });
+
+            } catch (err) {
+                const thinkingBubble = chatMessages.querySelector('.ai-thinking');
+                if (thinkingBubble) thinkingBubble.remove();
+                addChatMessage('Lỗi khi gọi API', 'ai');
+                console.error(err);
+            }
         });
-      });
-    }
 
-    // ✅ Prompt hiện tại
-    messages.push({
-      role: "user",
-      content: prompt,
+        function addChatMessage(message, type) {
+            const bubble = document.createElement('div');
+            bubble.classList.add('chat-bubble', type);
+            if (type === 'ai-thinking') {
+                bubble.classList.add('ai'); 
+            }
+            bubble.textContent = message;
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     });
-
-    // ✅ Gọi OpenAI
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
-      stream: false,
-    });
-
-    const aiReply = response.choices[0]?.message?.content;
-
-    if (!aiReply) {
-      console.warn("Warning: AI response did not contain content!", response);
-      return res.status(500).json({
-        error: "AI did not return any data",
-        modelUsed: "gpt-4o-mini",
-      });
-    }
-
-    res.status(200).json({
-      reply: aiReply,
-      modelUsed: "gpt-4o-mini",
-    });
-  } catch (err) {
-    console.error("Error calling OpenAI:", err);
-
-    res.status(500).json({
-      error: err.message || "Internal server error",
-      modelUsed: "gpt-4o-mini",
-    });
-  }
-}
+</script>
